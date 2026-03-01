@@ -1,0 +1,18 @@
+---
+layout: index
+---
+{%- set home = collections.all | filterByFrontMatter("dg-home", true) | first -%}
+{%- if home -%}
+    {{ home.templateContent | safe }}
+{%- else -%}
+    <h1>Добро пожаловать в мой цифровой сад 🌿</h1>
+    <p>Если вы видите эту страницу, значит сайт успешно настроен!</p>
+    <p>Создайте заметку в Obsidian и добавьте в её начало (frontmatter):</p>
+    <pre>
+    ---
+    dg-publish: true
+    dg-home: true
+    ---
+    </pre>
+    <p>Затем опубликуйте её через плагин Digital Garden.</p>
+{%- endif -%}
