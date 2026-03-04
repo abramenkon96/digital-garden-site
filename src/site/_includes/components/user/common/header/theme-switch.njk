@@ -1,29 +1,40 @@
-<!-- Используем родные классы шаблона: search-button и align-icon -->
-<div class="search-button align-icon" id="theme-toggle" style="cursor: pointer; width: 36px; padding: 0; display: flex; justify-content: center; margin-left: 10px;" title="Сменить тему">
+<!-- Контейнер кнопки. Меняем id на class, чтобы не было конфликтов при дублировании -->
+<div class="search-button align-icon custom-theme-toggle" style="cursor: pointer; width: 36px; padding: 0; display: flex; justify-content: center; margin-left: 10px;" title="Сменить тему">
   <span class="search-icon" style="display: flex; align-items: center;">
     
-    <!-- Иконка Луны (из родного набора Lucide, как и лупа) -->
-    <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon svg-icon" style="display: none;">
+    <!-- Иконка Луны -->
+    <svg class="moon-icon lucide lucide-moon svg-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
       <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
     </svg>
 
     <!-- Иконка Солнца -->
-    <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun svg-icon" style="display: none;">
+    <svg class="sun-icon lucide lucide-sun svg-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
       <circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path>
     </svg>
     
   </span>
 </div>
 
-<!-- Легкий JS для переключения классов без кастомных стилей -->
+<!-- Скрываем кнопку-клон внутри панели предпросмотра поиска -->
+<style>
+  #search-preview .custom-theme-toggle,
+  .preview-content .custom-theme-toggle {
+    display: none !important;
+  }
+</style>
+
+<!-- Логика переключения. Переписана под классы для защиты от багов -->
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    const toggleBtn = document.getElementById('theme-toggle');
-    const body = document.body;
-    const sunIcon = document.getElementById('sun-icon');
-    const moonIcon = document.getElementById('moon-icon');
+    // querySelector берет только ПЕРВУЮ кнопку (в основной шапке), игнорируя дубликаты в поиске
+    const toggleBtn = document.querySelector('.custom-theme-toggle');
+    if (!toggleBtn) return; // Если кнопки нет на странице, прерываем скрипт
 
-    // Проверяем сохраненную тему, либо берем ту, что плагин выставил по умолчанию
+    const body = document.body;
+    // Ищем иконки только внутри нашей активной кнопки
+    const sunIcon = toggleBtn.querySelector('.sun-icon');
+    const moonIcon = toggleBtn.querySelector('.moon-icon');
+
     let currentTheme = localStorage.getItem('dg-theme') || 
                        (body.classList.contains('theme-light') ? 'light' : 'dark');
 
@@ -31,13 +42,13 @@
       if (theme === 'dark') {
         body.classList.remove('theme-light');
         body.classList.add('theme-dark');
-        sunIcon.style.display = 'block';  // Показываем солнце в темной теме
-        moonIcon.style.display = 'none';
+        if (sunIcon) sunIcon.style.display = 'block';
+        if (moonIcon) moonIcon.style.display = 'none';
       } else {
         body.classList.remove('theme-dark');
         body.classList.add('theme-light');
-        sunIcon.style.display = 'none';
-        moonIcon.style.display = 'block'; // Показываем луну в светлой теме
+        if (sunIcon) sunIcon.style.display = 'none';
+        if (moonIcon) moonIcon.style.display = 'block';
       }
       localStorage.setItem('dg-theme', theme);
     }
