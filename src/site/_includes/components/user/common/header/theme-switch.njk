@@ -1,31 +1,21 @@
-<!-- Кнопка переключения темы -->
-<button id="theme-toggle" class="theme-toggle-btn" aria-label="Toggle Theme" title="Сменить тему">
-  <!-- Иконка Солнца (для перехода в светлую тему) -->
-  <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-  <!-- Иконка Луны (для перехода в темную) -->
-  <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-</button>
+<!-- Используем родные классы шаблона: search-button и align-icon -->
+<div class="search-button align-icon" id="theme-toggle" style="cursor: pointer; width: 36px; padding: 0; display: flex; justify-content: center; margin-left: 10px;" title="Сменить тему">
+  <span class="search-icon" style="display: flex; align-items: center;">
+    
+    <!-- Иконка Луны (из родного набора Lucide, как и лупа) -->
+    <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-moon svg-icon" style="display: none;">
+      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+    </svg>
 
-<!-- Немного стилей, чтобы кнопка висела в правом верхнем углу и не мешала поиску -->
-<style>
-  .theme-toggle-btn {
-    background: none;
-    border: none;
-    cursor: pointer;
-    padding: 8px;
-    color: var(--text-normal, inherit);
-    position: absolute;
-    top: 15px;
-    right: 50px; /* Отступ от правого края (если мешает лупе поиска, увеличь до 80px) */
-    z-index: 999;
-    transition: opacity 0.2s ease;
-  }
-  .theme-toggle-btn:hover {
-    opacity: 0.6;
-  }
-</style>
+    <!-- Иконка Солнца -->
+    <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-sun svg-icon" style="display: none;">
+      <circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path>
+    </svg>
+    
+  </span>
+</div>
 
-<!-- Логика переключения -->
+<!-- Легкий JS для переключения классов без кастомных стилей -->
 <script>
   document.addEventListener('DOMContentLoaded', () => {
     const toggleBtn = document.getElementById('theme-toggle');
@@ -33,36 +23,27 @@
     const sunIcon = document.getElementById('sun-icon');
     const moonIcon = document.getElementById('moon-icon');
 
-    // Проверяем, сохранял ли посетитель тему раньше
-    let currentTheme = localStorage.getItem('dg-theme');
-    
-    // Если нет, смотрим какую тему отдал сам плагин по умолчанию
-    if (!currentTheme) {
-      if (body.classList.contains('theme-dark')) currentTheme = 'dark';
-      else if (body.classList.contains('theme-light')) currentTheme = 'light';
-      else currentTheme = 'dark'; // На крайний случай
-    }
+    // Проверяем сохраненную тему, либо берем ту, что плагин выставил по умолчанию
+    let currentTheme = localStorage.getItem('dg-theme') || 
+                       (body.classList.contains('theme-light') ? 'light' : 'dark');
 
-    // Функция применения темы
     function applyTheme(theme) {
       if (theme === 'dark') {
         body.classList.remove('theme-light');
         body.classList.add('theme-dark');
-        sunIcon.style.display = 'block';
+        sunIcon.style.display = 'block';  // Показываем солнце в темной теме
         moonIcon.style.display = 'none';
       } else {
         body.classList.remove('theme-dark');
         body.classList.add('theme-light');
         sunIcon.style.display = 'none';
-        moonIcon.style.display = 'block';
+        moonIcon.style.display = 'block'; // Показываем луну в светлой теме
       }
-      localStorage.setItem('dg-theme', theme); // Запоминаем выбор
+      localStorage.setItem('dg-theme', theme);
     }
 
-    // Применяем сохраненную тему при загрузке
     applyTheme(currentTheme);
 
-    // Слушаем клик по кнопке
     toggleBtn.addEventListener('click', () => {
       currentTheme = body.classList.contains('theme-dark') ? 'light' : 'dark';
       applyTheme(currentTheme);
