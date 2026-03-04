@@ -1,40 +1,65 @@
-<!-- Контейнер кнопки. Меняем id на class, чтобы не было конфликтов при дублировании -->
-<div class="search-button align-icon custom-theme-toggle" style="cursor: pointer; width: 36px; padding: 0; display: flex; justify-content: center; margin-left: 10px;" title="Сменить тему">
-  <span class="search-icon" style="display: flex; align-items: center;">
-    
-    <!-- Иконка Луны -->
-    <svg class="moon-icon lucide lucide-moon svg-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
-      <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
-    </svg>
-
-    <!-- Иконка Солнца -->
-    <svg class="sun-icon lucide lucide-sun svg-icon" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
-      <circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path>
-    </svg>
-    
-  </span>
-</div>
-
-<!-- Скрываем кнопку-клон внутри панели предпросмотра поиска -->
-<style>
-  #search-preview .custom-theme-toggle,
-  .preview-content .custom-theme-toggle {
-    display: none !important;
-  }
-</style>
-
-<!-- Логика переключения. Переписана под классы для защиты от багов -->
 <script>
   document.addEventListener('DOMContentLoaded', () => {
-    // querySelector берет только ПЕРВУЮ кнопку (в основной шапке), игнорируя дубликаты в поиске
-    const toggleBtn = document.querySelector('.custom-theme-toggle');
-    if (!toggleBtn) return; // Если кнопки нет на странице, прерываем скрипт
+    // 1. Находим боковое меню (сайдбар)
+    const sidebar = document.querySelector('.filetree-sidebar');
+    if (!sidebar) return; // Если меню нет на странице, скрипт просто завершит работу без ошибок
 
+    // 2. Делаем сайдбар flex-контейнером, чтобы управлять расположением элементов
+    sidebar.style.display = 'flex';
+    sidebar.style.flexDirection = 'column';
+
+    // 3. Создаем нашу кнопку переключения
+    const toggleBtn = document.createElement('div');
+    toggleBtn.id = 'theme-toggle';
+    
+    // Используем родные классы сайта, чтобы кнопка реагировала на наведение как кнопка "Search"
+    toggleBtn.className = 'search-button';
+    
+    // Стилизуем кнопку: прижимаем к низу (margin-top: auto) и делаем "липкой" (position: sticky)
+    toggleBtn.style.cssText = `
+      cursor: pointer;
+      margin-top: auto; 
+      margin-bottom: 15px;
+      position: sticky;
+      bottom: 15px;
+      z-index: 10;
+      background-color: var(--background-primary);
+      border: 1px solid var(--background-modifier-border);
+      display: flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 6px;
+      box-shadow: 0 -4px 10px rgba(0,0,0,0.03); /* Легкая тень, чтобы отделить от списка файлов */
+    `;
+
+    // 4. Наполняем кнопку иконками и текстом (stroke="currentColor" обеспечит авто-инверсию цвета)
+    toggleBtn.innerHTML = `
+      <span class="search-icon" style="display: flex; align-items: center; justify-content: center; width: 24px; color: var(--text-normal);">
+        
+        <!-- Луна для светлой темы (днем будет темной) -->
+        <svg id="moon-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+          <path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path>
+        </svg>
+
+        <!-- Солнце для темной темы (ночью будет светлым) -->
+        <svg id="sun-icon" xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display: none;">
+          <circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path>
+        </svg>
+
+      </span>
+      <span id="theme-text" class="search-text" style="font-weight: 500; font-size: 14px; margin-left: 10px; color: var(--text-muted);"></span>
+    `;
+
+    // 5. Вставляем кнопку в конец бокового меню
+    sidebar.appendChild(toggleBtn);
+
+    // 6. Основная логика переключения и сохранения
     const body = document.body;
-    // Ищем иконки только внутри нашей активной кнопки
-    const sunIcon = toggleBtn.querySelector('.sun-icon');
-    const moonIcon = toggleBtn.querySelector('.moon-icon');
+    const sunIcon = document.getElementById('sun-icon');
+    const moonIcon = document.getElementById('moon-icon');
+    const themeText = document.getElementById('theme-text');
 
+    // Проверяем память браузера или берем текущую тему
     let currentTheme = localStorage.getItem('dg-theme') || 
                        (body.classList.contains('theme-light') ? 'light' : 'dark');
 
@@ -42,19 +67,22 @@
       if (theme === 'dark') {
         body.classList.remove('theme-light');
         body.classList.add('theme-dark');
-        if (sunIcon) sunIcon.style.display = 'block';
-        if (moonIcon) moonIcon.style.display = 'none';
+        sunIcon.style.display = 'block';   // Показываем солнце
+        moonIcon.style.display = 'none';
+        themeText.textContent = 'Включить светлую'; // Текст подсказывает, что произойдет при нажатии
       } else {
         body.classList.remove('theme-dark');
         body.classList.add('theme-light');
-        if (sunIcon) sunIcon.style.display = 'none';
-        if (moonIcon) moonIcon.style.display = 'block';
+        sunIcon.style.display = 'none';
+        moonIcon.style.display = 'block';  // Показываем луну
+        themeText.textContent = 'Включить тёмную'; 
       }
       localStorage.setItem('dg-theme', theme);
     }
 
     applyTheme(currentTheme);
 
+    // 7. Обработка клика
     toggleBtn.addEventListener('click', () => {
       currentTheme = body.classList.contains('theme-dark') ? 'light' : 'dark';
       applyTheme(currentTheme);
