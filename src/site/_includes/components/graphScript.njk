@@ -92,6 +92,8 @@
         let hoverNode = null;
         const color = getCssVar("--graph-main");
         const mutedColor = getCssVar("--graph-muted");
+        const bgColor = getCssVar("--background-primary") || "#ffffff";
+        const textColor = getCssVar("--text-normal") || "#333333";
         let Graph = ForceGraph()
         (el)
             .graphData(graphData)
@@ -142,12 +144,27 @@
                     ctx.stroke();
                 }
 
-                const label = htmlDecode(node.title)
+                const label = htmlDecode(node.title);
                 const fontSize = 3.5;
                 ctx.font = `${fontSize}px Sans-Serif`;
 
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'top';
+
+                // 1. Рисуем толстую обводку цвета фона, чтобы стереть линии под текстом
+                ctx.lineJoin = 'round';
+                ctx.lineWidth = 1.5; 
+                ctx.strokeStyle = bgColor; 
+                ctx.strokeText(label, node.x, node.y + nodeR + 2);
+
+                // 2. Логика цвета текста (тускнеет, если мы навели мышку на другой узел)
+                if (hoverNode !== null && node !== hoverNode && !highlightNodes.has(node.url)) {
+                    ctx.fillStyle = mutedColor;
+                } else {
+                    ctx.fillStyle = textColor;
+                }
+
+                // 3. Пишем сам текст поверх обводки
                 ctx.fillText(label, node.x, node.y + nodeR + 2);
             })
             .onNodeClick(node => {
@@ -162,6 +179,10 @@
                 hoverNode = node || null;
                 
             });
+            // --- Раздвигаем узлы ---
+            Graph.d3Force('charge').strength(-150); // Чем больше минус, тем сильнее узлы отталкиваются
+            Graph.d3Force('link').distance(40);     // Базовая длина линий
+            // -----------------------
             if (fullScreen || (delay != null && graphData.nodes.length > 4)) {
                 setTimeout(() => {
                     Graph.zoomToFit(5, 75);
