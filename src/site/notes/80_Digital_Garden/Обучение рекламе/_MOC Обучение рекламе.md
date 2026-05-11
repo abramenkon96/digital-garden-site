@@ -1,5 +1,5 @@
 ---
-{"dg-publish":true,"permalink":"/80-digital-garden/obuchenie-reklame/moc-obuchenie-reklame/","title":"Обучение рекламе (MOC)","tags":["#moc","#реклама","#обучение"]}
+{"dg-publish":true,"dg-path":"Обучение рекламе/_MOC Обучение рекламе.md","permalink":"/obuchenie-reklame/moc-obuchenie-reklame/","title":"Обучение рекламе (MOC)","tags":["#moc","#реклама","#обучение"]}
 ---
 
 # Обучение рекламе (база знаний для новичка)
